@@ -13,7 +13,7 @@ mongoose.connect(
     if (err) {
       throw err;
     } else {
-      console.log("La conexion a la base de datos es correcta.");
+      console.log("La conexion a la base de datos es exitosa.");
 
       app.listen(port, () => {
         console.log("######################");
