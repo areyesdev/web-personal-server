@@ -4,41 +4,42 @@ const User = require('../models/user');
 function signUp(req, res) {
   const user = new User();
 
-
   const { name, lastname, email, password, repeatPassword } = req.body;
   user.name = name;
   user.lastname = lastname;
-  user.email = email;
+  user.email = email.toLowerCase();
   user.role = "admin";
   user.active = false;
 
   if (!password || !repeatPassword) {
-    res.status(404).send({ message: "Las constraseñas son obligatorias." })
-  } if (password !== repeatPassword) {
-    res.status(404).send({ message: "Las contraseñas tiene que ser iguales." })
+    res.status(404).send({ message: "Las contraseñas son obligatorias." });
   } else {
-    bcrypt.hash(password, null, null, function (err, hash) {
-      if (err) {
-        res.status(500).send({ message: "Error al encriptar la contraseña." })
-      } else {
-        user.password = hash;
+    if (password !== repeatPassword) {
+      res.status(404).send({ message: "Las contraseñas no son iguales." });
+    } else {
+      bcrypt.hash(password, null, null, function (err, hash) {
+        if (err) {
+          res
+            .status(500)
+            .send({ message: "Error al encriptar la contraseña." });
+        } else {
+          user.password = hash;
 
-        //guardar en mongo
-        user.save((err, userStorage) => {
-          if (err) {
-            res.status(500).send({ message: "El usuario ya existe." })
-          } else {
-            if (!userStorage) {
-              res.status(404).send({ message: "Error al crear el usuario." })
+          user.save((err, userStored) => {
+            if (err) {
+              res.status(500).send({ message: "El usuario ya existe." });
             } else {
-              res.status(200).send({ message: userStorage })
+              if (!userStored) {
+                res.status(404).send({ message: "Error al crear el usuario." });
+              } else {
+                res.status(200).send({ user: userStored });
+              }
             }
-          }
-        })
-      }
-    })
+          });
+        }
+      });
+    }
   }
-
 }
 
 module.exports = {
